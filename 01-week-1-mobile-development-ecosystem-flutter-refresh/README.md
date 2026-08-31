@@ -1,0 +1,1 @@
+Untuk kendala yang saya temukan adalah menunggu lama saat debugging ke device android saya, sehingga saya tidak jadi menghubungkannya, hanya ke emulator saja
