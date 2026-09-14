@@ -26,3 +26,29 @@ class TodoListNotifier extends Notifier<List<Todo>> {
 
 final todoListProvider =
     NotifierProvider<TodoListNotifier, List<Todo>>(TodoListNotifier.new);
+
+enum TodoFilter { all, active, completed }
+
+class TodoFilterNotifier extends Notifier<TodoFilter> {
+  @override
+  TodoFilter build() => TodoFilter.all;
+
+  void setFilter(TodoFilter filter) => state = filter;
+}
+
+final todoFilterProvider =
+    NotifierProvider<TodoFilterNotifier, TodoFilter>(TodoFilterNotifier.new);
+
+final filteredTodosProvider = Provider<List<Todo>>((ref) {
+  final filter = ref.watch(todoFilterProvider);
+  final todos = ref.watch(todoListProvider);
+
+  switch (filter) {
+    case TodoFilter.active:
+      return todos.where((todo) => !todo.done).toList();
+    case TodoFilter.completed:
+      return todos.where((todo) => todo.done).toList();
+    case TodoFilter.all:
+      return todos;
+  }
+});
