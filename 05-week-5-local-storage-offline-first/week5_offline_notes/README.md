@@ -86,14 +86,14 @@ Estimasi AI masuk akal
 - Pindahkan logika cache posts dan `syncNotes` ke `lib/data/sync.dart` agar repository tetap fokus pada CRUD.
 - Tambahkan halaman detail catatan dengan GoRouter (`/note/:id`) yang membaca dari repository lokal, bukan dari state halaman list.
 ### Testing
-- `test/note_test.dart` menguji mapping model, persistensi flag `dirty`, serta provider sukses/error memakai repository palsu tanpa SQLite sungguhan.
+![alt text](screenshots/testing.png)
 
 ## Refleksi
-##### - Mengapa UI dilarang memanggil Dio langsung? Apa yang rusak jika aturan ini dilanggar?
-Karena akan merusak Separation of Concerns dan Single Responsibility Principle. Yang rusak adalah coupling ketat ke HTTP library, pengujiannya, duplikasi kode dan parsing, dan manajemen status menjadi berantakan
-##### - Kapan pagination client-side cukup, dan kapan harus mengandalkan pagination server (_page/_limit)?
-Pagination client-side saja cukup saat dataset di bawah 100–500 item, datanya relatif statis, dan dapat diunduh sekaligus di awal tanpa mengganggu performa. Sedangkan pagination server dapat diandalkan saat menangani dataset berukuran besar, terus bertambah, atau berubah secara real-time
-##### - Bagaimana exception repository berubah menjadi AsyncError tanpa try/catch di setiap widget? Kapan try/catch eksplisit tetap dibutuhkan?
-Adanya mekanisme deklaratif dari manajer status modern seperti Riverpod. try/catch eksplisit tetap dibutuhkan pada aksi-aksi imperatif untuk memicu efek samping tanpa mengganti seluruh tampilan layar menjadi pesan kesalahan
-##### - Bagian mana dari hasil AI yang Anda perbaiki, dan mengapa?
-Tidak ada
+#### - Mengapa daftar catatan tidak boleh disimpan di SharedPreferences? Apa yang rusak jika aturan ini dilanggar?
+Karena SharedPreferences dirancang untuk key-value sederhana, bisa memicu pemborosan memori dan risiko file corruption jika terjadi crash saat proses tulis
+#### - Kapan cache-first cukup, dan kapan Anda membutuhkan strategi lain (misalnya network-first untuk data harga real-time)?
+Cache-first cukup saat menggunakan data yang jarang berubah atau di mana kecepatan render UI diprioritaskan di atas kebaruan data seketika. Network-first digunakan saat memerlukan akurasi real-time tinggi untuk data
+#### - Bagaimana dirty flag berubah menjadi antrean sync tanpa memblokir UI? Kapan antrean terpisah (tabel outbox) menjadi perlu?
+Saat pengguna membuat/mengedit catatan, data langsung disimpan ke SQLite lokal dengan status dirty = 1 dan UI diperbarui secara instan, lalu proses sync ke server berjalan di background thread dan setelah server merespons 2xx, status diubah menjadi dirty = 0 lalu UI di-refresh. Tabel outbox terpisah menjadi diperlukan ketika satu aksi membutuhkan riwayat operasi yang kompleks, seperti merekam urutan aksi, menangani rollback transaksi, atau ketika beberapa permintaan HTTP yang berbeda harus dikirim secara berurutan
+#### - Bagian mana dari rekomendasi AI yang Anda tolak, dan mengapa?
+Rekomendasi Drift karena penggunaan sqflite diperlukan untuk praktikum ini
