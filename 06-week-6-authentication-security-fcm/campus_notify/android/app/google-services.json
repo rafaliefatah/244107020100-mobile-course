@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "952693779603",
+    "project_id": "campus-notify-rafazian",
+    "storage_bucket": "campus-notify-rafazian.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:952693779603:android:1456dc6719f73f9b19b166",
+        "android_client_info": {
+          "package_name": "com.example.campus_notify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXK1hwOeGKOuX1lSRhKoAfzU7pVm8A2ro"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
