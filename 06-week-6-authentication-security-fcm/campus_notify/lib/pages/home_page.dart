@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+
 import '../providers/auth_provider.dart';
+import '../routes.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -53,13 +55,13 @@ class HomePage extends ConsumerWidget {
             title: const Text('Pengumuman Libur Akademik'),
             subtitle: const Text('Klik untuk detail...'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/pengumuman/101'),
+            onTap: () => context.push(AppRoutes.announcementDetail('101')),
           ),
           ListTile(
             title: const Text('Jadwal Ujian Akhir Semester'),
             subtitle: const Text('Klik untuk detail...'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/pengumuman/102'),
+            onTap: () => context.push(AppRoutes.announcementDetail('102')),
           ),
         ],
       ),
