@@ -5,9 +5,9 @@ import '../data/auth_repository.dart';
 import '../data/api_errors.dart';
 import '../data/token_store.dart';
 
-// Inisialisasi instance langsung sesuai kode awal
-final _tokenStore = TokenStore();
-final _authRepository = AuthRepository();
+// Provider untuk TokenStore dan AuthRepository
+final tokenStoreProvider = Provider<TokenStore>((ref) => TokenStore());
+final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthRepository());
 
 final authStateProvider = AsyncNotifierProvider<AuthNotifier, bool>(
   AuthNotifier.new,
@@ -16,18 +16,22 @@ final authStateProvider = AsyncNotifierProvider<AuthNotifier, bool>(
 class AuthNotifier extends AsyncNotifier<bool> {
   @override
   Future<bool> build() async {
-    final token = await _tokenStore.readAccess();
+    final tokenStore = ref.watch(tokenStoreProvider);
+    final token = await tokenStore.readAccess();
     return token != null;
   }
 
   Future<void> login(String email, String password) async {
     state = const AsyncLoading();
     try {
-      final session = await _authRepository.login(
+      final authRepository = ref.read(authRepositoryProvider);
+      final tokenStore = ref.read(tokenStoreProvider);
+
+      final session = await authRepository.login(
         email: email,
         password: password,
       );
-      await _tokenStore.save(access: session.access, refresh: session.refresh);
+      await tokenStore.save(access: session.access, refresh: session.refresh);
       state = const AsyncData(true);
     } catch (error, stackTrace) {
       final message = error is DioException
@@ -38,7 +42,8 @@ class AuthNotifier extends AsyncNotifier<bool> {
   }
 
   Future<void> logout() async {
-    await _tokenStore.clear();
+    final tokenStore = ref.read(tokenStoreProvider);
+    await tokenStore.clear();
     ref.invalidateSelf();
   }
 }
