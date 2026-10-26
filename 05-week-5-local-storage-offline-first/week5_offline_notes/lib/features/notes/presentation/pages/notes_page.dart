@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../data/sync.dart';
-import '../data/repositories/note_repository.dart';
+import '../../../../pages/settings_page.dart';
+import '../providers/notes_providers.dart';
 import '../widgets/note_tile.dart';
-import 'settings_page.dart';
 
 class NotesPage extends ConsumerWidget {
   const NotesPage({super.key});
@@ -18,21 +17,31 @@ class NotesPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Offline Notes'),
         actions: [
-          // Tombol Sinkronisasi Catatan Dirty
           IconButton(
             icon: const Icon(Icons.sync),
             onPressed: () async {
-              final repo = ref.read(noteRepositoryProvider);
-            final count = await syncNotes(repo);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('$count catatan berhasil disinkronkan')),
-                );
+              ref.invalidate(syncNotesProvider);
+              try {
+                final count = await ref.read(syncNotesProvider.future);
+                ref.invalidate(notesProvider);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('$count catatan berhasil disinkronkan'),
+                    ),
+                  );
+                }
+              } on Exception catch (error) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Gagal menyinkronkan catatan: $error'),
+                    ),
+                  );
+                }
               }
-            ref.invalidate(notesProvider);
             },
           ),
-          // Tombol Pindah ke Halaman Settings
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
@@ -63,15 +72,23 @@ class NotesPage extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (error, stackTrace) => Center(child: Text('Error: $error')),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final repo = ref.read(noteRepositoryProvider);
-          await repo.addNote(
-            title: 'Catatan Baru ${DateTime.now().second}',
-            body: 'Ini isi catatan offline',
-          );
+          final result = await ref
+              .read(addNoteProvider)
+              .call(
+                title: 'Catatan Baru ${DateTime.now().second}',
+                body: 'Ini isi catatan offline',
+              );
+          if (result.failure case final failure?) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(failure.message)));
+            }
+            return;
+          }
           ref.invalidate(notesProvider);
         },
         child: const Icon(Icons.add),

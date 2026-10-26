@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'local/db.dart';
 import 'local/post.dart';
-import 'repositories/note_repository.dart';
 
 class PostRepository {
   Future<List<Post>> readCachedPosts() async {
@@ -26,14 +25,4 @@ class PostRepository {
     unawaited(refreshPostsInBackground());
     return cached;
   }
-}
-
-Future<int> syncNotes(NoteRepository repository) async {
-  final dirtyCount = await repository.countDirty();
-  if (dirtyCount == 0) return 0;
-
-  // Simulasi upload; tandai bersih setelah server mengonfirmasi sukses.
-  await Future.delayed(const Duration(seconds: 1));
-  await repository.markAllSynced();
-  return dirtyCount;
 }

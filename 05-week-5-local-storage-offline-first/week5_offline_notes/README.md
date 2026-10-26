@@ -83,8 +83,8 @@ Estimasi AI masuk akal
 
 ## Refactoring Challenge
 - Ekstrak baris catatan menjadi widget `NoteTile` tersendiri yang menampilkan badge "Belum tersinkron" bila `dirty == true`.
-- Pindahkan logika cache posts dan `syncNotes` ke `lib/data/sync.dart` agar repository tetap fokus pada CRUD.
-- Tambahkan halaman detail catatan dengan GoRouter (`/note/:id`) yang membaca dari repository lokal, bukan dari state halaman list.
+- Pindahkan logika cache posts dan syncNotes ke lib/data/sync.dart agar repository tetap fokus pada CRUD.
+- Tambahkan halaman detail catatan dengan GoRouter (/note/:id) yang membaca dari repository lokal, bukan dari state halaman list.
 ### Testing
 ![alt text](screenshots/testing.png)
 

@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/local/note.dart';
-import '../data/repositories/note_repository.dart';
+import '../../domain/entities/note.dart';
+import '../providers/notes_providers.dart';
 
-final noteDetailProvider = FutureProvider.family<Note?, int>(
-  (ref, id) {
-    return ref.watch(noteRepositoryProvider).fetchNoteById(id);
-  },
-  retry: (_, _) {
-    return null;
-  },
-);
+final noteDetailProvider = FutureProvider.family<Note?, int>((ref, id) async {
+  final result = await ref.watch(getNotesProvider).call();
+  if (result.failure case final failure?) {
+    throw Exception(failure.message);
+  }
+  for (final note in result.notes) {
+    if (note.id == id) {
+      return note;
+    }
+  }
+  return null;
+}, retry: (_, _) {
+  return null;
+});
 
 class NoteDetailPage extends ConsumerWidget {
   const NoteDetailPage({super.key, required this.noteId});
