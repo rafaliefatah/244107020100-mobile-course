@@ -7,7 +7,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../routes.dart';
+import '../../app/routes.dart';
+import 'route_from_message.dart';
 
 const _announcementTopic = 'pengumuman-kampus';
 const _androidChannelId = 'pengumuman';
@@ -22,7 +23,6 @@ const _androidChannel = AndroidNotificationChannel(
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Handler berjalan di isolate terpisah. Jangan akses BuildContext atau Riverpod.
   await Firebase.initializeApp();
 }
 
@@ -65,7 +65,6 @@ class PushService {
       badge: false,
       sound: false,
     );
-
     _messageSubscription = FirebaseMessaging.onMessage.listen(
       _showForegroundNotification,
       onError: (Object error, StackTrace stackTrace) =>
@@ -109,8 +108,6 @@ class PushService {
   Future<String?> getToken() => _messaging.getToken();
 
   Future<bool> requestPermission() async {
-    // Android 13+ meminta POST_NOTIFICATIONS saat runtime; panggilan FCM ini
-    // memicu dialog tersebut. iOS menampilkan prompt izin alert/badge/sound.
     final settings = await _messaging.requestPermission(
       alert: true,
       badge: true,
@@ -152,7 +149,6 @@ class PushService {
         if (route != null && route.isNotEmpty) _navigate(route);
       },
     );
-
     final androidNotifications = _localNotifications
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
@@ -175,14 +171,16 @@ class PushService {
         presentSound: true,
       ),
     );
-
     try {
       await _localNotifications.show(
         id: message.hashCode & 0x7fffffff,
         title: message.notification?.title ?? 'Pengumuman',
         body: message.notification?.body ?? '',
         notificationDetails: notificationDetails,
-        payload: routeFromMessage(message.data),
+        payload: routeFromMessage(
+          message.data,
+          fallbackRoute: AppRoutes.home,
+        ),
       );
     } catch (error, stackTrace) {
       _reportError('Menampilkan notifikasi lokal', error, stackTrace);
@@ -210,7 +208,9 @@ class PushService {
   }
 
   void _openMessageRoute(RemoteMessage message) {
-    _navigate(routeFromMessage(message.data));
+    _navigate(
+      routeFromMessage(message.data, fallbackRoute: AppRoutes.home),
+    );
   }
 
   void _reportError(String context, Object error, StackTrace stackTrace) {
